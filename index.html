@@ -46,6 +46,12 @@
             position: relative;
             z-index: 1;
         }
+        /* Mobile-specific adjustments */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding-top: 100px; /* Add space for the fixed header */
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200 font-sans">
@@ -83,11 +89,12 @@
     </header>
 
     <!-- Hero Section -->
-    <section id="home" class="min-h-screen flex items-center relative overflow-hidden">
+    <section id="home" class="min-h-screen flex items-center relative overflow-hidden ">
         <div id="particles-js"></div>
         <div class="container mx-auto px-6 content">
             <div class="flex flex-col md:flex-row items-center">
                 <div class="md:w-1/2 text-center md:text-left">
+                    <h1><
                     <h1 class="text-4xl md:text-6xl font-bold mb-4">Hi, I'm <span class="gradient-text">Niraj</span></h1>
                     <h2 class="text-2xl md:text-3xl mb-6">Aspiring Data Analyst | MSc Data Science</h2>
                     <p class="text-gray-400 mb-8 max-w-lg">Transforming raw data into meaningful insights that drive business decisions and growth strategies.</p>
