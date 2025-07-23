@@ -46,15 +46,82 @@
             position: relative;
             z-index: 1;
         }
+        
+        /* Modal styling */
+        .modal {
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Form validation */
+        .error {
+            border-color: #ef4444 !important;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        
         /* Mobile-specific adjustments */
         @media (max-width: 768px) {
             .hero-section {
                 padding-top: 100px; /* Add space for the fixed header */
             }
+            
+            .modal-content {
+                width: 90%;
+            }
         }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200 font-sans">
+    <!-- Admin Access Button (Hidden by default) -->
+    <button id="admin-access" class="fixed bottom-4 left-4 bg-gray-800 text-gray-300 p-2 rounded-full shadow-lg z-50 hover:bg-gray-700 transition">
+        <i class="fas fa-lock"></i>
+    </button>
+
+    <!-- Admin Modal -->
+    <div id="admin-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="modal-content bg-gray-800 rounded-xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold gradient-text">Form Submissions</h3>
+                <button id="close-admin-modal" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <div class="flex items-center space-x-4">
+                    <input type="password" id="admin-password" placeholder="Enter admin password" class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="verify-password" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg">Verify</button>
+                </div>
+                <p id="password-error" class="error-message mt-2">Incorrect password</p>
+            </div>
+            
+            <div id="submissions-container" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-gray-400"><span id="submission-count">0</span> submissions</p>
+                    <button id="clear-submissions" class="text-red-400 hover:text-red-300 flex items-center">
+                        <i class="fas fa-trash mr-2"></i> Clear All
+                    </button>
+                </div>
+                
+                <div id="submissions-list" class="space-y-4">
+                    <!-- Submissions will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Header/Navigation -->
     <header class="fixed w-full z-50 bg-gray-900 bg-opacity-90 backdrop-blur-sm">
         <nav class="container mx-auto px-6 py-4">
@@ -89,12 +156,11 @@
     </header>
 
     <!-- Hero Section -->
-    <section id="home" class="min-h-screen flex items-center relative overflow-hidden ">
+    <section id="home" class="min-h-screen flex items-center relative overflow-hidden hero-section">
         <div id="particles-js"></div>
         <div class="container mx-auto px-6 content">
             <div class="flex flex-col md:flex-row items-center">
                 <div class="md:w-1/2 text-center md:text-left">
-                    <h1><
                     <h1 class="text-4xl md:text-6xl font-bold mb-4">Hi, I'm <span class="gradient-text">Niraj</span></h1>
                     <h2 class="text-2xl md:text-3xl mb-6">Aspiring Data Analyst | MSc Data Science</h2>
                     <p class="text-gray-400 mb-8 max-w-lg">Transforming raw data into meaningful insights that drive business decisions and growth strategies.</p>
@@ -138,7 +204,7 @@
                 </div>
                 <div class="md:w-1/2 md:pl-12">
                     <h3 class="text-2xl font-bold mb-4">Who am I?</h3>
-                    <p class="text-gray-400 mb-6">I’m a Data Analyst Intern and MSc Data Science student with a strong foundation in Python, SQL, and Power BI. I specialize in transforming data into actionable insights through dashboards, machine learning, and statistical analysis. With a focus on solving real-world problems, I aim to bridge the gap between data and decision-making.</p>
+                    <p class="text-gray-400 mb-6">I'm a Data Analyst Intern and MSc Data Science student with a strong foundation in Python, SQL, and Power BI. I specialize in transforming data into actionable insights through dashboards, machine learning, and statistical analysis. With a focus on solving real-world problems, I aim to bridge the gap between data and decision-making.</p>
                     
                     <div class="mb-6">
                         <h4 class="text-xl font-semibold mb-3">My Approach</h4>
@@ -422,27 +488,39 @@
             
             <div class="flex flex-col md:flex-row gap-12">
                 <div class="md:w-1/2">
-                    <form action="https://formsubmit.co/kinekarniraj@gmail.com" method="POST" class="space-y-6">
+                    <form id="contact-form" class="space-y-6">
                         <input type="hidden" name="_captcha" value="false">
                         <div>
                             <label for="name" class="block mb-2 text-sm font-medium">Your Name</label>
-                            <input type="text" id="name" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="John Doe">
+                            <input type="text" id="name" name="name" required class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="John Doe">
+                            <p id="name-error" class="error-message">Please enter your name</p>
                         </div>
                         <div>
                             <label for="email" class="block mb-2 text-sm font-medium">Your Email</label>
-                            <input type="email" id="email" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="john@example.com">
+                            <input type="email" id="email" name="email" required class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="john@example.com">
+                            <p id="email-error" class="error-message">Please enter a valid email</p>
                         </div>
                         <div>
                             <label for="subject" class="block mb-2 text-sm font-medium">Subject</label>
-                            <input type="text" id="subject" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Data Analysis Project">
+                            <input type="text" id="subject" name="subject" required class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Data Analysis Project">
+                            <p id="subject-error" class="error-message">Please enter a subject</p>
                         </div>
                         <div>
                             <label for="message" class="block mb-2 text-sm font-medium">Your Message</label>
-                            <textarea id="message" rows="5" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tell me about your project..."></textarea>
+                            <textarea id="message" name="message" rows="5" required class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tell me about your project..."></textarea>
+                            <p id="message-error" class="error-message">Please enter your message</p>
                         </div>
                         <button type="submit" class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition">
                             Send Message <i class="fas fa-paper-plane ml-2"></i>
                         </button>
+                        
+                        <!-- Success Message -->
+                        <div id="success-message" class="hidden p-4 bg-green-900 text-green-300 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle mr-3"></i>
+                                <span>Your message has been sent successfully!</span>
+                            </div>
+                        </div>
                     </form>
                 </div>
                 
@@ -460,7 +538,6 @@
                                     <a href="#" class="text-gray-400 hover:text-blue-400 transition">kinekarniraj@gmail.com</a>
                                 </div>
                             </div>
-                            
                             
                             <div class="flex items-start">
                                 <div class="bg-indigo-600 p-3 rounded-full mr-4">
@@ -692,6 +769,186 @@
                 }
             },
             "retina_detect": true
+        });
+
+        // Form Submission Handling
+        const contactForm = document.getElementById('contact-form');
+        const successMessage = document.getElementById('success-message');
+        
+        // Set a default admin password (you should change this to something secure)
+        const ADMIN_PASSWORD = "admin123";
+        
+        // Form validation
+        function validateForm() {
+            let isValid = true;
+            
+            // Validate name
+            const name = document.getElementById('name');
+            const nameError = document.getElementById('name-error');
+            if (!name.value.trim()) {
+                name.classList.add('error');
+                nameError.style.display = 'block';
+                isValid = false;
+            } else {
+                name.classList.remove('error');
+                nameError.style.display = 'none';
+            }
+            
+            // Validate email
+            const email = document.getElementById('email');
+            const emailError = document.getElementById('email-error');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.value)) {
+                email.classList.add('error');
+                emailError.style.display = 'block';
+                isValid = false;
+            } else {
+                email.classList.remove('error');
+                emailError.style.display = 'none';
+            }
+            
+            // Validate subject
+            const subject = document.getElementById('subject');
+            const subjectError = document.getElementById('subject-error');
+            if (!subject.value.trim()) {
+                subject.classList.add('error');
+                subjectError.style.display = 'block';
+                isValid = false;
+            } else {
+                subject.classList.remove('error');
+                subjectError.style.display = 'none';
+            }
+            
+            // Validate message
+            const message = document.getElementById('message');
+            const messageError = document.getElementById('message-error');
+            if (!message.value.trim()) {
+                message.classList.add('error');
+                messageError.style.display = 'block';
+                isValid = false;
+            } else {
+                message.classList.remove('error');
+                messageError.style.display = 'none';
+            }
+            
+            return isValid;
+        }
+        
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                return;
+            }
+            
+            // Get form data
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Store submission in localStorage
+            const submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
+            submissions.push(formData);
+            localStorage.setItem('formSubmissions', JSON.stringify(submissions));
+            
+            // Show success message
+            successMessage.classList.remove('hidden');
+            
+            // Reset form
+            contactForm.reset();
+            
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+                successMessage.classList.add('hidden');
+            }, 5000);
+            
+            // You can still submit to FormSubmit.co if you want
+            // const formAction = contactForm.getAttribute('action');
+            // if (formAction) {
+            //     const form = new FormData(contactForm);
+            //     fetch(formAction, {
+            //         method: 'POST',
+            //         body: form
+            //     });
+            // }
+        });
+        
+        // Admin Access
+        const adminAccessButton = document.getElementById('admin-access');
+        const adminModal = document.getElementById('admin-modal');
+        const closeAdminModal = document.getElementById('close-admin-modal');
+        const verifyPasswordButton = document.getElementById('verify-password');
+        const adminPasswordInput = document.getElementById('admin-password');
+        const passwordError = document.getElementById('password-error');
+        const submissionsContainer = document.getElementById('submissions-container');
+        const submissionsList = document.getElementById('submissions-list');
+        const submissionCount = document.getElementById('submission-count');
+        const clearSubmissionsButton = document.getElementById('clear-submissions');
+        
+        // Toggle admin modal
+        adminAccessButton.addEventListener('click', () => {
+            adminModal.classList.add('active');
+        });
+        
+        closeAdminModal.addEventListener('click', () => {
+            adminModal.classList.remove('active');
+        });
+        
+        // Verify password
+        verifyPasswordButton.addEventListener('click', () => {
+            if (adminPasswordInput.value === ADMIN_PASSWORD) {
+                passwordError.style.display = 'none';
+                submissionsContainer.classList.remove('hidden');
+                loadSubmissions();
+            } else {
+                passwordError.style.display = 'block';
+            }
+        });
+        
+        // Load submissions from localStorage
+        function loadSubmissions() {
+            const submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
+            submissionCount.textContent = submissions.length;
+            
+            submissionsList.innerHTML = '';
+            
+            if (submissions.length === 0) {
+                submissionsList.innerHTML = '<p class="text-gray-400 text-center py-4">No submissions yet</p>';
+                return;
+            }
+            
+            submissions.reverse().forEach((submission, index) => {
+                const submissionElement = document.createElement('div');
+                submissionElement.className = 'bg-gray-700 p-4 rounded-lg';
+                submissionElement.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold">${submission.name} <span class="text-blue-400">(${submission.email})</span></h4>
+                        <span class="text-xs text-gray-400">${new Date(submission.timestamp).toLocaleString()}</span>
+                    </div>
+                    <h5 class="text-sm font-semibold mb-2">${submission.subject}</h5>
+                    <p class="text-gray-300 text-sm">${submission.message}</p>
+                `;
+                submissionsList.appendChild(submissionElement);
+            });
+        }
+        
+        // Clear all submissions
+        clearSubmissionsButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all submissions?')) {
+                localStorage.removeItem('formSubmissions');
+                loadSubmissions();
+            }
+        });
+        
+        // Close modal when clicking outside
+        adminModal.addEventListener('click', (e) => {
+            if (e.target === adminModal) {
+                adminModal.classList.remove('active');
+            }
         });
     </script>
 </body>
